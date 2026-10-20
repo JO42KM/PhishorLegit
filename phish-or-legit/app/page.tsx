@@ -1,59 +1,8 @@
 "use client";
 
+import { challenges } from "@/lib/challenges";
 import { useEffect, useState } from "react";
 import { getHighScore, saveHighScore } from "@/lib/scores";
-
-type Challenge = {
-  sender: string;
-  subject: string;
-  message: string;
-  label: "PHISHING" | "LEGITIMATE";
-  explanation: string;
-  difficulty: string;
-};
-
-const challenges: Challenge[] = [
-  {
-    sender: "pakketdienst@example.invalid",
-    subject: "Je pakket wordt teruggestuurd!",
-    message:
-      "We konden je pakket niet bezorgen. Betaal binnen 30 minuten de ontbrekende bezorgkosten om te voorkomen dat je pakket wordt teruggestuurd.",
-    label: "PHISHING",
-    explanation:
-      "Let op de tijdsdruk, de dreiging en het onverwachte betaalverzoek. Controleer de bezorgstatus via de officiële website of app van de pakketdienst.",
-    difficulty: "Makkelijk",
-  },
-  {
-    sender: "updates@example.invalid",
-    subject: "Je wekelijkse rekeningoverzicht",
-    message:
-      "Je wekelijkse overzicht is beschikbaar. Je kunt je recente rekeningactiviteiten bekijken door zelf de officiële app of website te openen.",
-    label: "LEGITIMATE",
-    explanation:
-      "Dit bericht vraagt niet om gevoelige informatie en verwijst je naar de officiële app of website. Toch kun je op basis van alleen de tekst niet zeker weten of het echt is.",
-    difficulty: "Gemiddeld",
-  },
-  {
-    sender: "helpdesk@example.invalid",
-    subject: "Actie vereist: bevestig je wachtwoord",
-    message:
-      "Onze helpdesk heeft je huidige wachtwoord nodig voor een veiligheidscontrole. Stuur het zo snel mogelijk als antwoord op dit bericht.",
-    label: "PHISHING",
-    explanation:
-      "Een betrouwbare helpdesk hoort nooit om je wachtwoord te vragen. Deel je wachtwoord niet via e-mail of chat. Neem bij twijfel zelf contact op met de officiële helpdesk.",
-    difficulty: "Makkelijk",
-  },
-  {
-    sender: "meldingen@example.invalid",
-    subject: "Nieuwe aanmelding gedetecteerd",
-    message:
-      "Er is aangemeld bij je account. Herken je deze activiteit niet? Open dan zelf de officiële app of website en controleer je beveiligingsinstellingen.",
-    label: "LEGITIMATE",
-    explanation:
-      "Dit bericht geeft je de mogelijkheid om zelfstandig je account te controleren. Toch bewijst de tekst niet dat het bericht echt is. Controleer verdachte meldingen altijd via het officiële kanaal.",
-    difficulty: "Moeilijk",
-  },
-];
 
 type Screen = "home" | "game" | "results";
 
@@ -78,42 +27,39 @@ export default function Home() {
     setNewHighScore(false);
     setScreen("game");
   }
-
+  
   function answerQuestion(answer: "PHISHING" | "LEGITIMATE") {
     if (selectedAnswer !== null) return;
 
     setSelectedAnswer(answer);
 
     if (answer === currentChallenge.label) {
-      setScore((previousScore) => previousScore + 100);
+      setScore((previousScore) => previousScore + currentChallenge.points);
     }
   }
 
   function nextQuestion() {
-    const finalScore =
-      score +
-      (selectedAnswer === currentChallenge.label ? 0 : 0);
-
     if (questionIndex < challenges.length - 1) {
       setQuestionIndex((previousIndex) => previousIndex + 1);
       setSelectedAnswer(null);
       return;
     }
 
-    const completedScore =
-      finalScore +
-      (selectedAnswer === currentChallenge.label ? 0 : 0);
+    const finalScore =
+      score +
+      (selectedAnswer === currentChallenge.label
+        ? currentChallenge.points
+        : 0);
 
-    const actualScore = score;
-
-    if (actualScore > highScore) {
-      saveHighScore(actualScore);
-      setHighScore(actualScore);
+    if (finalScore > highScore) {
+      saveHighScore(finalScore);
+      setHighScore(finalScore);
       setNewHighScore(true);
     } else {
       setNewHighScore(false);
     }
 
+    setScore(finalScore);
     setScreen("results");
   }
 
