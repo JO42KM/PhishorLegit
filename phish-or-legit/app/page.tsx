@@ -4,7 +4,208 @@ import { challenges } from "@/lib/challenges";
 import { useEffect, useState } from "react";
 import { getHighScore, saveHighScore } from "@/lib/scores";
 
+
 type Screen = "home" | "game" | "results";
+
+function EmailPreview({
+  challenge,
+}: {
+  challenge: (typeof challenges)[number];
+}) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
+        <div className="flex items-center gap-2 text-sm text-slate-500">
+          <span>✉️</span>
+          <span>Postvak IN</span>
+        </div>
+
+        <h3 className="mt-4 text-lg font-bold text-slate-900">
+          {challenge.subject}
+        </h3>
+      </div>
+
+      <div className="space-y-4 p-5">
+        <div className="flex items-start gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-700">
+            {challenge.sender.trim().charAt(0).toUpperCase()}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <p className="break-words font-semibold text-slate-900">
+              {challenge.sender}
+            </p>
+
+            <p className="text-sm text-slate-500">
+              Aan: {challenge.email?.to ?? "jij@example.com"}
+            </p>
+
+            {challenge.email?.replyTo && (
+              <p className="mt-1 break-all text-sm text-slate-500">
+                Antwoordadres: {challenge.email.replyTo}
+              </p>
+            )}
+
+            <p className="mt-1 text-xs text-slate-400">
+              {challenge.email?.date ?? "Vandaag"}
+            </p>
+          </div>
+        </div>
+
+        <div className="whitespace-pre-line break-words text-sm leading-7 text-slate-700">
+          {challenge.message}
+        </div>
+
+        {challenge.email?.attachments &&
+          challenge.email.attachments.length > 0 && (
+            <div className="border-t border-slate-200 pt-4">
+              <p className="mb-2 text-sm font-semibold text-slate-700">
+                Bijlagen
+              </p>
+
+              {challenge.email.attachments.map((attachment) => (
+                <div
+                  key={attachment}
+                  className="mb-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm"
+                >
+                  📎 {attachment}
+                </div>
+              ))}
+            </div>
+          )}
+      </div>
+    </div>
+  );
+}
+
+function ChatPreview({
+  challenge,
+}: {
+  challenge: (typeof challenges)[number];
+}) {
+  const messages = challenge.chat ?? [
+    {
+      sender: "CONTACT" as const,
+      message: challenge.message,
+      time: "14:32",
+    },
+  ];
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-[#efeae2]">
+      <div className="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-green-100 text-xl">
+          👤
+        </div>
+
+        <div className="min-w-0">
+          <p className="font-semibold text-slate-900">
+            {challenge.sender}
+          </p>
+
+          <p className="text-xs text-slate-500">
+            Trainingsgesprek
+          </p>
+        </div>
+
+        <span className="ml-auto text-lg text-slate-500">⋮</span>
+      </div>
+
+      <div className="space-y-3 p-4">
+        <div className="mx-auto mb-4 w-fit rounded-lg bg-white/80 px-3 py-1 text-xs text-slate-500 shadow-sm">
+          Vandaag
+        </div>
+
+        {messages.map((message, index) => {
+          const isPlayer = message.sender === "PLAYER";
+
+          return (
+            <div
+              key={`${challenge.id}-${index}`}
+              className={`flex ${
+                isPlayer ? "justify-end" : "justify-start"
+              }`}
+            >
+              <div
+                className={`max-w-[88%] rounded-2xl px-3 py-2 shadow-sm ${
+                  isPlayer
+                    ? "rounded-tr-sm bg-[#d9fdd3]"
+                    : "rounded-tl-sm bg-white"
+                }`}
+              >
+                <p className="whitespace-pre-line break-words text-sm leading-6 text-slate-800">
+                  {message.message}
+                </p>
+
+                <div className="mt-1 flex items-center justify-end gap-1">
+                  <span className="text-[10px] text-slate-500">
+                    {message.time}
+                  </span>
+
+                  {isPlayer && (
+                    <span className="text-xs text-blue-500">✓✓</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="border-t border-slate-200 bg-white p-3">
+        <div className="rounded-full bg-slate-100 px-4 py-3 text-sm text-slate-400">
+          Trainingsvoorbeeld — niet echt verzonden
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SmsPreview({
+  challenge,
+}: {
+  challenge: (typeof challenges)[number];
+}) {
+  return (
+    <div className="mx-auto max-w-sm overflow-hidden rounded-[2rem] border-4 border-slate-300 bg-white shadow-sm">
+      <div className="bg-slate-50 px-5 py-5 text-center">
+        <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-slate-200 text-xl">
+          👤
+        </div>
+
+        <p className="font-semibold text-slate-900">
+          {challenge.sender}
+        </p>
+
+        <p className="text-xs text-slate-500">
+          Sms-bericht
+        </p>
+      </div>
+
+      <div className="min-h-64 bg-white p-4">
+        <p className="mb-4 text-center text-xs text-slate-400">
+          Vandaag
+        </p>
+
+        <div className="max-w-[90%] rounded-2xl rounded-tl-sm bg-slate-100 px-4 py-3">
+          <p className="whitespace-pre-line break-words text-sm leading-6 text-slate-800">
+            {challenge.message}
+          </p>
+        </div>
+
+        <p className="mt-2 text-xs text-slate-400">
+          14:32
+        </p>
+      </div>
+
+      <div className="border-t border-slate-200 bg-slate-50 p-3">
+        <p className="text-center text-xs text-slate-500">
+          Fictief trainingsbericht
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   const [screen, setScreen] = useState<Screen>("home");
@@ -27,7 +228,7 @@ export default function Home() {
     setNewHighScore(false);
     setScreen("game");
   }
-  
+
   function answerQuestion(answer: "PHISHING" | "LEGITIMATE") {
     if (selectedAnswer !== null) return;
 
@@ -274,29 +475,19 @@ export default function Home() {
               <h1 className="mt-7 text-2xl font-bold text-slate-900">
                 Is dit bericht phishing of betrouwbaar?
               </h1>
+              
+              <div className="mt-6">
+                {currentChallenge.type === "EMAIL" && (
+                  <EmailPreview challenge={currentChallenge} />
+                )}
 
-              <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200">
-                <div className="border-b border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Afzender
-                  </p>
-                  <p className="mt-1 break-all text-sm text-slate-800">
-                    {currentChallenge.sender}
-                  </p>
+                {currentChallenge.type === "CHAT" && (
+                  <ChatPreview challenge={currentChallenge} />
+                )}
 
-                  <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Onderwerp
-                  </p>
-                  <p className="mt-1 font-semibold text-slate-900">
-                    {currentChallenge.subject}
-                  </p>
-                </div>
-
-                <div className="p-5">
-                  <p className="whitespace-pre-line leading-7 text-slate-700">
-                    {currentChallenge.message}
-                  </p>
-                </div>
+                {currentChallenge.type === "SMS" && (
+                  <SmsPreview challenge={currentChallenge} />
+                )}
               </div>
 
               {selectedAnswer === null ? (

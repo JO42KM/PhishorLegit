@@ -14,14 +14,40 @@ export type ChallengeDifficulty = "MAKKELIJK" | "GEMIDDELD" | "MOEILIJK";
 
 export type ChallengeLabel = "PHISHING" | "LEGITIMATE";
 
-export type Challenge = {
+
+type EmailDetails = {
+  to: string;
+  cc?: string;
+  replyTo?: string;
+  date: string;
+  attachments?: string[];
+};
+
+export type ChatMessage = {
+  sender: "CONTACT" | "PLAYER";
+  message: string;
+  time: string;
+};
+
+type Challenge = {
   id: string;
   category: ChallengeCategory;
-  type: ChallengeType;
+  type: "EMAIL" | "SMS" | "CHAT";
   difficulty: ChallengeDifficulty;
+
   sender: string;
   subject: string;
   message: string;
+
+  email?: {
+    to: string;
+    date: string;
+    replyTo?: string;
+    attachments?: string[];
+  };
+
+  chat?: ChatMessage[];
+
   label: ChallengeLabel;
   redFlags: string[];
   explanation: string;
@@ -335,28 +361,57 @@ export const challenges: Challenge[] = [
   // --------------------------------------------------
   // 6. SMS EN WHATSAPP
   // --------------------------------------------------
-  {
-    id: "chat-01",
-    category: "Sms en WhatsApp",
-    type: "CHAT",
-    difficulty: "MAKKELIJK",
-    sender: "Onbekend nummer",
-    subject: "",
-    message:
-      "Hoi mam, ik heb een nieuw nummer. Mijn oude telefoon doet het niet meer. Kun je me even helpen met een betaling? Ik kan nu niet bellen, maar ik stuur je de gegevens zo.",
-    label: "PHISHING",
-    redFlags: [
-      "De afzender beweert een nieuw nummer te hebben.",
-      "Er wordt om geld gevraagd.",
-      "De afzender kan niet bellen.",
-      "De identiteit wordt niet onafhankelijk bevestigd.",
-    ],
-    explanation:
-      "Dit lijkt op de bekende vriend-in-nood- of familiefraude. Een crimineel doet zich voor als een familielid en probeert vertrouwen en bezorgdheid te gebruiken om geld te krijgen.",
-    advice:
-      "Bel het oude, bekende nummer of stel een controlevraag die een vreemde niet eenvoudig kan beantwoorden. Maak geen geld over voordat je de identiteit hebt bevestigd.",
-    points: 100,
-  },
+{
+  id: "chat-01",
+  category: "Sms en WhatsApp",
+  type: "CHAT",
+  difficulty: "MAKKELIJK",
+  sender: "Onbekend nummer",
+  subject: "",
+  message: "",
+  chat: [
+    {
+      sender: "CONTACT",
+      message: "Hoi mam! ❤️",
+      time: "14:21",
+    },
+    {
+      sender: "CONTACT",
+      message:
+        "Ik heb een nieuw nummer. Mijn oude telefoon doet het niet meer.",
+      time: "14:21",
+    },
+    {
+      sender: "PLAYER",
+      message: "Hé, wat is er gebeurd?",
+      time: "14:22",
+    },
+    {
+      sender: "CONTACT",
+      message:
+        "Ik moet dringend een rekening betalen, maar mijn bankapp werkt niet.",
+      time: "14:22",
+    },
+    {
+      sender: "CONTACT",
+      message:
+        "Kun je het even voorschieten? Ik betaal je vanavond terug. Ik kan nu niet bellen 😔",
+      time: "14:23",
+    },
+  ],
+  label: "PHISHING",
+  redFlags: [
+    "De identiteit van de afzender is niet bevestigd.",
+    "Er wordt om geld gevraagd.",
+    "De afzender beweert niet te kunnen bellen.",
+    "Er wordt emotionele druk gebruikt.",
+  ],
+  explanation:
+    "Dit is een voorbeeld van familiefraude. Een oplichter doet zich voor als een familielid en gebruikt een nieuw telefoonnummer en een dringend geldverzoek om vertrouwen te winnen.",
+  advice:
+    "Bel het bekende nummer van je familielid of controleer de identiteit via een ander betrouwbaar kanaal voordat je geld overmaakt.",
+  points: 100,
+},
   {
     id: "chat-02",
     category: "Sms en WhatsApp",
